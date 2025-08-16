@@ -1,0 +1,143 @@
+{
+  "name": "gcode-analyzer",
+  "version": "1.0.0",
+  "description": "Comprehensive G-code analysis and optimization tool for 3D printing",
+  "main": "index.js",
+  "private": true,
+  "workspaces": [
+    "api-service",
+    "web-dashboard", 
+    "desktop",
+    "shared"
+  ],
+  "scripts": {
+    "dev": "concurrently \"npm run dev:api\" \"npm run dev:web\"",
+    "dev:api": "cd api-service && npm run dev",
+    "dev:web": "cd web-dashboard && npm run dev",
+    "dev:desktop": "cd desktop && npm run electron:dev",
+    "build": "npm run build:shared && npm run build:api && npm run build:web && npm run build:desktop",
+    "build:api": "cd api-service && npm run build",
+    "build:web": "cd web-dashboard && npm run build", 
+    "build:desktop": "cd desktop && npm run build",
+    "build:shared": "cd shared && npm run build",
+    "test": "npm run test:api && npm run test:web && npm run test:desktop && npm run test:python",
+    "test:api": "cd api-service && npm test",
+    "test:web": "cd web-dashboard && npm test",
+    "test:desktop": "cd desktop && npm test",
+    "test:python": "cd parser-core/python && python -m pytest tests/ -v",
+    "lint": "npm run lint:api && npm run lint:web && npm run lint:desktop && npm run lint:shared",
+    "lint:api": "cd api-service && npm run lint",
+    "lint:web": "cd web-dashboard && npm run lint",
+    "lint:desktop": "cd desktop && npm run lint",
+    "lint:shared": "cd shared && npm run lint",
+    "lint:python": "cd parser-core/python && flake8 .",
+    "format": "npm run format:api && npm run format:web && npm run format:desktop && npm run format:shared",
+    "format:api": "cd api-service && npm run format",
+    "format:web": "cd web-dashboard && npm run format",
+    "format:desktop": "cd desktop && npm run format",
+    "format:shared": "cd shared && npm run format",
+    "format:python": "cd parser-core/python && black .",
+    "install-all": "npm install && npm run install:workspaces && npm run install:python",
+    "install:workspaces": "npm install --workspaces",
+    "install:python": "cd parser-core/python && pip install -r requirements.txt",
+    "clean": "npm run clean:api && npm run clean:web && npm run clean:desktop && npm run clean:shared",
+    "clean:api": "cd api-service && npm run clean || rm -rf dist node_modules",
+    "clean:web": "cd web-dashboard && npm run clean || rm -rf dist node_modules",
+    "clean:desktop": "cd desktop && npm run clean || rm -rf dist node_modules",
+    "clean:shared": "cd shared && npm run clean || rm -rf dist node_modules",
+    "docker:up": "docker-compose up -d",
+    "docker:down": "docker-compose down",
+    "docker:logs": "docker-compose logs -f",
+    "docker:build": "docker-compose build",
+    "docker:clean": "docker-compose down -v --rmi all",
+    "db:migrate": "cd api-service && npm run db:migrate",
+    "db:seed": "cd api-service && npm run db:seed",
+    "db:reset": "cd api-service && npm run db:reset",
+    "docs": "npm run docs:api && npm run docs:python",
+    "docs:api": "cd api-service && npm run docs",
+    "docs:python": "cd parser-core/python && sphinx-build -b html docs docs/_build",
+    "release": "npm run test && npm run build && npm run release:version",
+    "release:version": "npm version patch",
+    "release:minor": "npm version minor",
+    "release:major": "npm version major",
+    "precommit": "npm run lint && npm run test",
+    "postinstall": "husky install || true"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/your-username/gcode-analyzer.git"
+  },
+  "keywords": [
+    "gcode",
+    "3d-printing",
+    "analysis",
+    "optimization",
+    "visualization",
+    "slicer",
+    "prusa",
+    "cura",
+    "electron",
+    "react",
+    "nodejs",
+    "python"
+  ],
+  "author": "G-Code Analyzer Contributors",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/your-username/gcode-analyzer/issues"
+  },
+  "homepage": "https://github.com/your-username/gcode-analyzer#readme",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "husky": "^8.0.3",
+    "lint-staged": "^15.2.0",
+    "@commitlint/cli": "^18.4.3",
+    "@commitlint/config-conventional": "^18.4.3",
+    "prettier": "^3.1.0",
+    "eslint": "^8.55.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.2",
+    "@typescript-eslint/parser": "^6.13.2"
+  },
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0",
+    "python": ">=3.9.0"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx}": [
+      "eslint --fix",
+      "prettier --write"
+    ],
+    "*.{json,md,yaml,yml}": [
+      "prettier --write"
+    ],
+    "*.py": [
+      "black",
+      "flake8"
+    ]
+  },
+  "commitlint": {
+    "extends": [
+      "@commitlint/config-conventional"
+    ],
+    "rules": {
+      "type-enum": [
+        2,
+        "always",
+        [
+          "build",
+          "chore",
+          "ci",
+          "docs",
+          "feat", 
+          "fix",
+          "perf",
+          "refactor",
+          "revert",
+          "style",
+          "test"
+        ]
+      ]
+    }
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "name": "api-service",
+  "version": "1.0.0",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "dev": "nodemon --exec ts-node src/services/server.ts",
+    "start": "node dist/services/server.js",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "lint": "eslint src --ext .ts",
+    "lint:fix": "eslint src --ext .ts --fix",
+    "format": "prettier --write src/**/*.ts",
+    "clean": "rm -rf dist",
+    "db:migrate": "echo 'Migrations handled by init.sql'",
+    "db:seed": "echo 'Add seed script here'",
+    "db:reset": "echo 'Add reset script here'"
+  },
+  "keywords": [
+    "gcode",
+    "analysis",
+    "api",
+    "3d-printing"
+  ],
+  "author": "G-Code Analyzer Contributors",
+  "license": "MIT",
+  "description": "API service for G-code analysis and optimization",
+  "dependencies": {
+    "@types/pg": "^8.15.5",
+    "axios": "^1.6.0",
+    "cors": "^2.8.5",
+    "debug": "^4.3.7",
+    "express": "^4.21.2",
+    "form-data": "^4.0.0",
+    "ioredis": "^5.7.0",
+    "multer": "^2.0.2",
+    "pg": "^8.16.3",
+    "socket.io": "^4.8.1"
+  },
+  "devDependencies": {
+    "@types/express": "^4.17.21",
+    "@types/jest": "^30.0.0",
+    "@types/multer": "^2.0.0",
+    "@types/node": "^24.3.0",
+    "@types/socket.io": "^3.0.1",
+    "eslint": "^9.33.0",
+    "jest": "^30.0.5",
+    "nodemon": "^3.1.10",
+    "prettier": "^3.6.2",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.9.2"
+  }
+}

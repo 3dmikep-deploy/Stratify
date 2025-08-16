@@ -1,0 +1,21 @@
+# parser-core/requirements.txt
+numpy==1.24.3
+pandas==2.0.3
+scipy==1.11.1
+matplotlib==3.7.2
+flask==2.3.2
+redis==4.6.0
+psycopg2-binary==2.9.7
+requests==2.31.0
+click==8.1.6
+python-dotenv==1.0.0
+
+# Optional dependencies for advanced features
+scikit-learn==1.3.0
+opencv-python==4.8.0.76
+Pillow==10.0.0
+
+# Development dependencies
+pytest==7.4.0
+black==23.7.0
+flake8==6.0.0

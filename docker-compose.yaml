@@ -1,0 +1,181 @@
+# docker-compose.yml
+version: '3.8'
+
+services:
+  database:
+    image: postgres:15-alpine
+    container_name: gcode-analyzer-db
+    environment:
+      POSTGRES_DB: gcode_analyzer
+      POSTGRES_USER: analyzer_user
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-secure_password}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5433:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U analyzer_user"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - analyzer_network
+
+  redis:
+    image: redis:7-alpine
+    container_name: gcode-analyzer-cache
+    command: redis-server --appendonly yes
+    volumes:
+      - redis_data:/data
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - analyzer_network
+
+
+  parser-service:
+    build:
+      context: ./parser-core
+      dockerfile: Dockerfile.python
+    container_name: gcode-parser
+    environment:
+      REDIS_URL: redis://redis:6379
+      DATABASE_URL: postgresql://analyzer_user:${DB_PASSWORD:-secure_password}@database:5432/gcode_analyzer
+      PYTHONUNBUFFERED: 1
+    volumes:
+      - ./parser-core/python:/app
+      - upload_data:/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+  api-service:
+    build:
+      context: ./api-service
+      dockerfile: Dockerfile
+    container_name: gcode-api
+    command: node server.js
+    environment:
+      NODE_ENV: production
+      PORT: 3001
+      DATABASE_URL: postgresql://analyzer_user:${DB_PASSWORD:-secure_password}@database:5432/gcode_analyzer
+      REDIS_URL: redis://redis:6379
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:3000}
+      PYTHON_SERVICE_URL: http://parser-service:5000
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./api-service:/app
+      - /app/node_modules
+      - upload_data:/uploads
+    depends_on:
+      database:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+      parser-service:
+        condition: service_started
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+
+  web-dashboard:
+    build:
+      context: ./web-dashboard
+      dockerfile: Dockerfile
+    container_name: gcode-dashboard
+    environment:
+      NODE_ENV: production
+      VITE_API_URL: ${API_URL:-http://localhost:3001}
+      VITE_WS_URL: ${WS_URL:-ws://localhost:3001}
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./web-dashboard:/app
+    depends_on:
+      - api-service
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+
+  nginx:
+    image: nginx:alpine
+    container_name: gcode-nginx
+    ports:
+      - "8080:80"
+      - "8443:443"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/ssl:/etc/nginx/ssl
+      - ./nginx/sites-enabled:/etc/nginx/sites-enabled
+    depends_on:
+      - api-service
+      - web-dashboard
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: gcode-grafana
+    environment:
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_INSTALL_PLUGINS: redis-datasource
+    ports:
+      - "3030:3000"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      - ./monitoring/grafana/dashboards:/etc/grafana/provisioning/dashboards
+      - ./monitoring/grafana/datasources:/etc/grafana/provisioning/datasources
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: gcode-prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+      - '--storage.tsdb.path=/prometheus'
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - prometheus_data:/prometheus
+    networks:
+      - analyzer_network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  upload_data:
+    driver: local
+  grafana_data:
+    driver: local
+  prometheus_data:
+    driver: local
+
+networks:
+  analyzer_network:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16

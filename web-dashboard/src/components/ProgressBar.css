@@ -1,0 +1,120 @@
+/* ProgressBar.css */
+.progress-container {
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
+}
+
+.progress-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+  gap: 12px;
+}
+
+.progress-icon {
+  font-size: 1.2rem;
+  flex-shrink: 0;
+}
+
+.progress-text {
+  flex: 1;
+  font-weight: 600;
+  color: #333;
+  font-size: 1rem;
+}
+
+.progress-percentage {
+  font-weight: 700;
+  color: #007bff;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+.progress-bar-container {
+  width: 100%;
+  height: 8px;
+  background: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+  box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.progress-bar {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #007bff, #0056b3);
+  border-radius: 4px;
+  transition: width 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.progress-bar-fill::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  animation: shimmer 1.5s infinite;
+}
+
+.progress-bar.complete .progress-bar-fill {
+  background: linear-gradient(90deg, #28a745, #1e7e34);
+}
+
+.progress-bar.error .progress-bar-fill {
+  background: linear-gradient(90deg, #dc3545, #c82333);
+}
+
+.progress-stage {
+  margin-top: 8px;
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-style: italic;
+}
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .progress-container {
+    margin: 16px;
+    padding: 16px;
+  }
+  
+  .progress-header {
+    flex-direction: column;
+    align-items: stretch;
+    text-align: center;
+    gap: 8px;
+  }
+  
+  .progress-text, .progress-percentage {
+    text-align: center;
+  }
+}
